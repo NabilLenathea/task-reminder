@@ -1,27 +1,17 @@
-import {useState} from "react";
+import { useState } from "react";
 
-
-
-//parent component
+// Komponen utama
 export default function App() {
-
-
-  //destructing array for states
   const [items, setItems] = useState([]);
-  
 
-  //handle add items to the state
   const handleAddItems = (item) => {
     setItems((prevItems) => [...prevItems, item]);
-  }
-
+  };
 
   const handleRemoveItem = (itemId) => {
     setItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
-  }
+  };
 
-
-  //handle update items from the state
   function handleUpdateItem(id) {
     setItems((items) =>
       items.map((item) =>
@@ -30,118 +20,125 @@ export default function App() {
     );
   }
 
-
-  //render child components inside parent
   return (
     <div className="app">
       <Logo />
       <Form onAddItems={handleAddItems} />
-      <PackingList items={items} 
-      onRemoveItem={handleRemoveItem} 
-      onUpdateItem={handleUpdateItem}/>
-      <Stats items={items}/>
+      <PackingList
+        items={items}
+        onRemoveItem={handleRemoveItem}
+        onUpdateItem={handleUpdateItem}
+      />
+      <Stats items={items} />
     </div>
   );
 }
 
-
 function Logo() {
-  return <h1> walking walking 🫃🏿🫃🏿</h1>
+  return <h1>📅 Pengingat Tugas 📌</h1>;
 }
 
-//child component Form
-function Form({onAddItems}) {
-  //destructing array for state
+// Komponen Form
+function Form({ onAddItems }) {
   const [description, setDescription] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [dueDate, setDueDate] = useState("");
+  const [priority, setPriority] = useState("Tidak");
 
-  //handle submission of form, by preventing its default behavior
   function handleSubmit(e) {
     e.preventDefault();
 
-    //if empty description
     if (!description) return;
 
-    const newItem = { description, quantity, packed: false, id: Date.now() };
-    console.log(newItem); //testing new item data
-    
-    //store new item in array from parent state
-    //called this function whenever form submitted
+    const newItem = {
+      description,
+      quantity,
+      packed: false,
+      id: Date.now(),
+      dueDate,
+      priority,
+    };
     onAddItems(newItem);
 
-    //return this state
     setDescription("");
     setQuantity(1);
+    setDueDate("");
+    setPriority("Tidak");
   }
+
   return (
     <form className="add-form" onSubmit={handleSubmit}>
+      <h3>daftar daftar tugasmu 🤓💕 </h3>
 
-      <h3>Yuk Checklist Barang 🤓💕 </h3>
-      <select
-      value={quantity}
-      onChange={(e) => setQuantity(Number(e.target.value))}
-      >
-        {Array.from({length: 20 }, (_, i) => i + 1).map((num) => (
-          <option value={num}>{num}</option>
-        ))}
-      </select>
       <input
-      type="text"
-      placeholder="Barang yang mau dibawa"
-      value={description}
-      onChange={(e) => setDescription(e.target.value)}
+        type="text"
+        placeholder="Tugas yang perlu diingatkan"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
       />
-      <button>Bawa</button>
+
+      <input
+        type="date"
+        value={dueDate}
+        onChange={(e) => setDueDate(e.target.value)}
+      />
+
+      <select value={priority} onChange={(e) => setPriority(e.target.value)}>
+        <option value="Ya">Ya</option>
+        <option value="Tidak">Tidak</option>
+      </select>
+      <button>Buat Pengingat</button>
     </form>
   );
 }
 
-//child component PackingList
-function PackingList({items, onRemoveItem, onUpdateItem}) {
+// Komponen PackingList
+function PackingList({ items, onRemoveItem, onUpdateItem }) {
   return (
     <div className="list">
       <ul>
         {items.map((item) => (
-          <Item item={item} 
-          key={item.id} 
-          onRemoveItem={onRemoveItem}
-          onUpdateItem={onUpdateItem}/>
+          <Item
+            item={item}
+            key={item.id}
+            onRemoveItem={onRemoveItem}
+            onUpdateItem={onUpdateItem}
+          />
         ))}
       </ul>
     </div>
   );
 }
 
-function Item({item, onRemoveItem, onUpdateItem}) {
+function Item({ item, onRemoveItem, onUpdateItem }) {
   const handleRemoveClick = () => {
     onRemoveItem(item.id);
   };
+
   return (
     <li>
-      <input type="checkbox"
-      value={item.packed}
-      onChange={() => onUpdateItem(item.id)}/>
-      {/* ternary operator to check simple condition */}
-      {/* if item.packed === true then apply this style textDecoration: "line-through" else don't do anything*/}
-      <span style={item.packed ? {textDecoration: "line-through" } : {}}>
-        {item.quantity} {item.description}
+      <input
+        type="checkbox"
+        checked={item.packed}
+        onChange={() => onUpdateItem(item.id)}
+      />
+      <span style={item.packed ? { textDecoration: "line-through" } : {}}>
+        {item.description}, tgl dibuat : {item.dueDate} / Priotias :{" "}
+        {item.priority}
       </span>
-      <button onClick={handleRemoveClick}>🤪</button>
+      <button onClick={handleRemoveClick}>💥</button>
     </li>
-  )
+  );
 }
 
-//child component Stats
-function Stats({items}) {
-  //jika tidak ada item pada array
+// Komponen Stats
+function Stats({ items }) {
   if (!items.length)
-  return (
+    return (
       <p className="stats">
-      <em>
-        Tambahkan Barang Bawaan Anda bub 👯👯
-      </em>
+        <em>Tambahkan Tugas Anda bub 👯👯</em>
       </p>
-  );
+    );
 
   const numItems = items.length;
   const numPacked = items.filter((item) => item.packed).length;
@@ -151,9 +148,9 @@ function Stats({items}) {
     <footer className="stats">
       <em>
         {percentage === 100
-        ? "Kamu siap berangkat ✈️"
-        : `😜 Kamu punya ${numItems} barang di daftar, dan sudah packing ${numPacked}
-        barang (${percentage}%)`}
+          ? "Semua tugas selesai! ✅"
+          : `😜 Kamu punya ${numItems} tugas di daftar, dan sudah selesai ${numPacked}
+        tugas (${percentage}%)`}
       </em>
     </footer>
   );
